@@ -14,12 +14,15 @@
         <TextBox Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}"/>
         <TextBlock Margin="0,5,0,0">Password</TextBlock>
         <TextBox Text="{Binding Password , UpdateSourceTrigger=PropertyChanged}"/>
+        
         <Button Margin="0,5,0,0" Command="{Binding LoginCommand}">Login</Button>
+        
         <TextBlock Text="{Binding HelloText}" Margin="0,5,0,0"/>
-        <TextBlock Margin="0,5,0,0">Is logging in: <Run Text="{Binding IsLoggingIn, Mode=OneWay}"/></TextBlock>
-        <TextBlock Visibility="{Binding IsLoggingIn, Converter={StaticResource BooleanToVisibilityConverter}}" Text="WORKING....." FontSize="24"/>
 
-        <TextBlock Margin="0,5,0,0">Is logging in: <Run Text="{Binding IsLoggingIn, Mode=OneWay}"/></TextBlock>
-        <TextBlock Margin="0,5,0,0">Is logged in: <Run Text="{Binding LoggedIn, Mode=OneWay}"/></TextBlock>
+        <TextBlock Margin="0,5,0,0">Is logging in: <Run Text="{Binding IsLoggingIn}" FontWeight="Bold"/></TextBlock>
+
+        <TextBlock Visibility="{Binding IsLoggingIn, Converter={StaticResource BooleanToVisibilityHiddenConverter}}" Text="WORKING....." FontSize="24"/>
+
+        <TextBlock Margin="0,5,0,0">Is logged in: <Run Text="{Binding LoggedIn}" FontWeight="Bold"/></TextBlock>
     </StackPanel>
 </UserControl>

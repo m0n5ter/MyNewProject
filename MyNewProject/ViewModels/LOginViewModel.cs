@@ -53,7 +53,7 @@ internal class LOginViewModel : ViewModelBase
         try
         {
             IsLoggingIn = true;
-            await Task.Delay(3000);
+            await Task.Delay(20000);
             LoggedIn = UserName == "admin" && Password == "123";
             UserName = Password = string.Empty;
         }

@@ -1,4 +1,4 @@
-using MyNewProject.Mvvm;
+using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace MyNewProject.ViewModels;
 
@@ -6,7 +6,7 @@ namespace MyNewProject.ViewModels;
 /// One item of the list. It is a full view model too:
 /// it implements INotifyPropertyChanged, so the UI reacts to every change.
 /// </summary>
-internal class TodoItemViewModel : ViewModelBase
+internal class TodoItemViewModel : ObservableObject
 {
     private string _title;
     private bool _isDone;
@@ -20,13 +20,13 @@ internal class TodoItemViewModel : ViewModelBase
     public string Title
     {
         get => _title;
-        set => SetField(ref _title, value);
+        set => SetProperty(ref _title, value);
     }
 
     public bool IsDone
     {
         get => _isDone;
-        set => SetField(ref _isDone, value);
+        set => SetProperty(ref _isDone, value);
     }
 
     public DateTime CreatedAt { get; }

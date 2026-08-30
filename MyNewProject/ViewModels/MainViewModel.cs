@@ -1,4 +1,5 @@
-using MyNewProject.Mvvm;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace MyNewProject.ViewModels;
 
@@ -6,7 +7,7 @@ namespace MyNewProject.ViewModels;
 /// Root view model. It owns two child view models and switches between them.
 /// The children know nothing about each other - all the wiring lives here.
 /// </summary>
-internal class MainViewModel : ViewModelBase
+internal class MainViewModel : ObservableObject
 {
     private bool _isLoggedIn;
     private string _currentUser = string.Empty;
@@ -18,7 +19,7 @@ internal class MainViewModel : ViewModelBase
 
         TodoList = new TodoListViewModel();
 
-        LogoutCommand = new UiCommand(Logout);
+        LogoutCommand = new RelayCommand(Logout);
     }
 
     public LoginViewModel Login { get; }
@@ -30,7 +31,7 @@ internal class MainViewModel : ViewModelBase
         get => _isLoggedIn;
         private set
         {
-            if (SetField(ref _isLoggedIn, value))
+            if (SetProperty(ref _isLoggedIn, value))
                 OnPropertyChanged(nameof(IsLoginVisible));
         }
     }
@@ -40,10 +41,10 @@ internal class MainViewModel : ViewModelBase
     public string CurrentUser
     {
         get => _currentUser;
-        private set => SetField(ref _currentUser, value);
+        private set => SetProperty(ref _currentUser, value);
     }
 
-    public UiCommand LogoutCommand { get; }
+    public RelayCommand LogoutCommand { get; }
 
     private void OnLoginSucceeded(string userName)
     {

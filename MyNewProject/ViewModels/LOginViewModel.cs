@@ -1,4 +1,5 @@
-using MyNewProject.Mvvm;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace MyNewProject.ViewModels;
 
@@ -7,7 +8,7 @@ namespace MyNewProject.ViewModels;
 /// It does not know what happens after a successful login -
 /// it just raises an event, and the parent (MainViewModel) decides.
 /// </summary>
-internal class LoginViewModel : ViewModelBase
+internal class LoginViewModel : ObservableObject
 {
     private string _userName = string.Empty;
     private string _password = string.Empty;
@@ -18,7 +19,7 @@ internal class LoginViewModel : ViewModelBase
 
     public LoginViewModel()
     {
-        LoginCommand = new UiCommand(async () => await LoginAsync(), CanLogin);
+        LoginCommand = new RelayCommand(async () => await LoginAsync(), CanLogin);
     }
 
     public string UserName
@@ -26,10 +27,10 @@ internal class LoginViewModel : ViewModelBase
         get => _userName;
         set
         {
-            if (SetField(ref _userName, value))
+            if (SetProperty(ref _userName, value))
             {
                 HasError = false;
-                LoginCommand.RaiseCanExecuteChanged();
+                LoginCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -39,10 +40,10 @@ internal class LoginViewModel : ViewModelBase
         get => _password;
         set
         {
-            if (SetField(ref _password, value))
+            if (SetProperty(ref _password, value))
             {
                 HasError = false;
-                LoginCommand.RaiseCanExecuteChanged();
+                LoginCommand.NotifyCanExecuteChanged();
             }
         }
     }
@@ -52,18 +53,18 @@ internal class LoginViewModel : ViewModelBase
         get => _isLoggingIn;
         set
         {
-            if (SetField(ref _isLoggingIn, value))
-                LoginCommand.RaiseCanExecuteChanged();
+            if (SetProperty(ref _isLoggingIn, value))
+                LoginCommand.NotifyCanExecuteChanged();
         }
     }
 
     public bool HasError
     {
         get => _hasError;
-        set => SetField(ref _hasError, value);
+        set => SetProperty(ref _hasError, value);
     }
 
-    public UiCommand LoginCommand { get; }
+    public RelayCommand LoginCommand { get; }
 
     public void Reset()
     {

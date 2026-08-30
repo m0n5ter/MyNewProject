@@ -1,7 +1,8 @@
 using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
-using MyNewProject.Mvvm;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 
 namespace MyNewProject.ViewModels;
 
@@ -13,7 +14,7 @@ namespace MyNewProject.ViewModels;
 /// 2. PropertyChanged of every item - a single item changed (IsDone).
 /// The list subscribes to both to keep the counters up to date.
 /// </summary>
-internal class TodoListViewModel : ViewModelBase
+internal class TodoListViewModel : ObservableObject
 {
     private string _newTitle = string.Empty;
     private TodoItemViewModel? _selectedItem;
@@ -22,9 +23,9 @@ internal class TodoListViewModel : ViewModelBase
     {
         Items.CollectionChanged += OnItemsCollectionChanged;
 
-        AddCommand = new UiCommand(Add, () => !string.IsNullOrWhiteSpace(NewTitle));
-        RemoveCommand = new UiCommand<TodoItemViewModel>(Remove, item => item != null);
-        ClearDoneCommand = new UiCommand(ClearDone, () => DoneCount > 0);
+        AddCommand = new RelayCommand(Add, () => !string.IsNullOrWhiteSpace(NewTitle));
+        RemoveCommand = new RelayCommand<TodoItemViewModel>(Remove, item => item != null);
+        ClearDoneCommand = new RelayCommand(ClearDone, () => DoneCount > 0);
 
         Items.Add(new TodoItemViewModel("Learn properties and bindings") { IsDone = true });
         Items.Add(new TodoItemViewModel("Learn nested view models"));
@@ -38,24 +39,24 @@ internal class TodoListViewModel : ViewModelBase
         get => _newTitle;
         set
         {
-            if (SetField(ref _newTitle, value))
-                AddCommand.RaiseCanExecuteChanged();
+            if (SetProperty(ref _newTitle, value))
+                AddCommand.NotifyCanExecuteChanged();
         }
     }
 
     public TodoItemViewModel? SelectedItem
     {
         get => _selectedItem;
-        set => SetField(ref _selectedItem, value);
+        set => SetProperty(ref _selectedItem, value);
     }
 
     public int TotalCount => Items.Count;
     public int DoneCount => Items.Count(item => item.IsDone);
     public int ActiveCount => TotalCount - DoneCount;
 
-    public UiCommand AddCommand { get; }
-    public UiCommand<TodoItemViewModel> RemoveCommand { get; }
-    public UiCommand ClearDoneCommand { get; }
+    public RelayCommand AddCommand { get; }
+    public RelayCommand<TodoItemViewModel> RemoveCommand { get; }
+    public RelayCommand ClearDoneCommand { get; }
 
     public void Clear()
     {
@@ -105,6 +106,6 @@ internal class TodoListViewModel : ViewModelBase
         OnPropertyChanged(nameof(TotalCount));
         OnPropertyChanged(nameof(DoneCount));
         OnPropertyChanged(nameof(ActiveCount));
-        ClearDoneCommand.RaiseCanExecuteChanged();
+        ClearDoneCommand.NotifyCanExecuteChanged();
     }
 }

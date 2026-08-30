@@ -1,0 +1,58 @@
+<UserControl 
+    x:Class="MyNewProject.Views.TodoListView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:viewModels="clr-namespace:MyNewProject.ViewModels"
+    mc:Ignorable="d" 
+    d:DesignWidth="400"
+    d:DesignHeight="300"
+    d:DataContext="{d:DesignInstance viewModels:TodoListViewModel}"
+>
+    <DockPanel>
+
+        <!-- New item -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <Button DockPanel.Dock="Right" Margin="5,0,0,0" Padding="10,2"
+                    Command="{Binding AddCommand}">Add</Button>
+            <TextBox Text="{Binding NewTitle, UpdateSourceTrigger=PropertyChanged}"/>
+        </DockPanel>
+
+        <!-- Counters: they are recalculated by the list view model -->
+        <DockPanel DockPanel.Dock="Bottom" Margin="0,8,0,0">
+            <Button DockPanel.Dock="Right" Padding="10,2"
+                    Command="{Binding ClearDoneCommand}">Clear done</Button>
+            <TextBlock VerticalAlignment="Center">
+                Total: <Run Text="{Binding TotalCount, Mode=OneWay}" FontWeight="Bold"/>,
+                active: <Run Text="{Binding ActiveCount, Mode=OneWay}" FontWeight="Bold"/>,
+                done: <Run Text="{Binding DoneCount, Mode=OneWay}" FontWeight="Bold"/>
+            </TextBlock>
+        </DockPanel>
+
+        <!-- The collection itself. Every row's DataContext is a TodoItemViewModel -->
+        <ListBox ItemsSource="{Binding Items}"
+                 SelectedItem="{Binding SelectedItem}"
+                 HorizontalContentAlignment="Stretch">
+            <ListBox.ItemTemplate>
+                <DataTemplate DataType="{x:Type viewModels:TodoItemViewModel}">
+                    <DockPanel>
+                        <!-- The command lives in the LIST view model, so we go up to the ListBox -->
+                        <Button DockPanel.Dock="Right" Padding="6,0" Margin="5,0,0,0"
+                                Content="X"
+                                Command="{Binding DataContext.RemoveCommand, RelativeSource={RelativeSource AncestorType=ListBox}}"
+                                CommandParameter="{Binding}"/>
+
+                        <TextBlock DockPanel.Dock="Right" Foreground="Gray" FontSize="11"
+                                   VerticalAlignment="Center"
+                                   Text="{Binding CreatedAt, StringFormat=HH:mm:ss}"/>
+
+                        <CheckBox IsChecked="{Binding IsDone}" VerticalAlignment="Center">
+                            <TextBlock Text="{Binding Title}" TextTrimming="CharacterEllipsis"/>
+                        </CheckBox>
+                    </DockPanel>
+                </DataTemplate>
+            </ListBox.ItemTemplate>
+        </ListBox>
+    </DockPanel>
+</UserControl>

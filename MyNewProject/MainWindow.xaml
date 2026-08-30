@@ -1,4 +1,4 @@
-﻿<Window x:Class="MyNewProject.MainWindow"
+<Window x:Class="MyNewProject.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
@@ -6,14 +6,36 @@
         xmlns:views="clr-namespace:MyNewProject.Views"
         xmlns:viewModels="clr-namespace:MyNewProject.ViewModels"
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
-    
+        Title="Todo" Height="450" Width="600">
+
+    <!-- One root view model for the whole window. Children get their piece of it below. -->
     <Window.DataContext>
-        <viewModels:LOginViewModel/>
+        <viewModels:MainViewModel/>
     </Window.DataContext>
 
-    <UniformGrid Columns="2">
-        <views:LoginView Margin="40"/>
-        <views:LoginView Margin="40"/>
-    </UniformGrid>
+    <Grid Margin="20">
+
+        <!-- Step 1: the login form.
+             Visibility is bound on the wrapper, because the inner view
+             replaces its own DataContext with MainViewModel.Login. -->
+        <Grid Visibility="{Binding IsLoginVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
+            <views:LoginView Width="240"
+                             HorizontalAlignment="Center"
+                             VerticalAlignment="Center"
+                             DataContext="{Binding Login}"/>
+        </Grid>
+
+        <!-- Step 2: the todo list. DataContext = MainViewModel.TodoList -->
+        <DockPanel Visibility="{Binding IsLoggedIn, Converter={StaticResource BooleanToVisibilityConverter}}">
+
+            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+                <Button DockPanel.Dock="Right" Padding="10,2" Command="{Binding LogoutCommand}">Logout</Button>
+                <TextBlock FontSize="18" VerticalAlignment="Center">
+                    Todo list of <Run Text="{Binding CurrentUser, Mode=OneWay}" FontWeight="Bold"/>
+                </TextBlock>
+            </DockPanel>
+
+            <views:TodoListView DataContext="{Binding TodoList}"/>
+        </DockPanel>
+    </Grid>
 </Window>

@@ -2,13 +2,13 @@
 using System.Windows;
 using System.Windows.Data;
 
-namespace MyNewProject.ViewModels;
+namespace MyNewProject.Views.Converters;
 
 public class BooleanToVisibilityHiddenConverter : IValueConverter
 {
     public object? Convert(object? value, Type targetType, object? parameter, CultureInfo culture)
     {
-        return value is bool and true ? Visibility.Visible : Visibility.Hidden;
+        return value is true ? Visibility.Visible : Visibility.Hidden;
     }
 
     public object? ConvertBack(object? value, Type targetType, object? parameter, CultureInfo culture)

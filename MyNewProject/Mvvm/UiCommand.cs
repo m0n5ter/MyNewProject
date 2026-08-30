@@ -1,6 +1,6 @@
 ﻿using System.Windows.Input;
 
-namespace MyNewProject.ViewModels;
+namespace MyNewProject.Mvvm;
 
 internal class UiCommand : UiCommand<object>
 {

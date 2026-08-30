@@ -1,4 +1,4 @@
-﻿<UserControl 
+<UserControl 
     x:Class="MyNewProject.Views.LoginView"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
     xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
@@ -6,23 +6,28 @@
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:viewModels="clr-namespace:MyNewProject.ViewModels"
     mc:Ignorable="d" 
-    d:DesignWidth="200"
-    d:DataContext="{d:DesignInstance viewModels:LOginViewModel}"
+    d:DesignWidth="240"
+    d:DataContext="{d:DesignInstance viewModels:LoginViewModel}"
 >
     <StackPanel>
+        <TextBlock FontSize="20" Margin="0,0,0,10">Sign in</TextBlock>
+
         <TextBlock>User name</TextBlock>
         <TextBox Text="{Binding UserName, UpdateSourceTrigger=PropertyChanged}"/>
+
         <TextBlock Margin="0,5,0,0">Password</TextBlock>
-        <TextBox Text="{Binding Password , UpdateSourceTrigger=PropertyChanged}"/>
-        
-        <Button Margin="0,5,0,0" Command="{Binding LoginCommand}">Login</Button>
-        
-        <TextBlock Text="{Binding HelloText}" Margin="0,5,0,0"/>
+        <TextBox Text="{Binding Password, UpdateSourceTrigger=PropertyChanged}"/>
 
-        <TextBlock Margin="0,5,0,0">Is logging in: <Run Text="{Binding IsLoggingIn}" FontWeight="Bold"/></TextBlock>
+        <Button Margin="0,10,0,0" Padding="0,4" IsDefault="True" Command="{Binding LoginCommand}">Login</Button>
 
-        <TextBlock Visibility="{Binding IsLoggingIn, Converter={StaticResource BooleanToVisibilityHiddenConverter}}" Text="WORKING....." FontSize="24"/>
+        <TextBlock Margin="0,5,0,0" Foreground="Gray" FontSize="11">Hint: admin / 123</TextBlock>
 
-        <TextBlock Margin="0,5,0,0">Is logged in: <Run Text="{Binding LoggedIn}" FontWeight="Bold"/></TextBlock>
+        <TextBlock Margin="0,5,0,0" FontSize="16"
+                   Text="Signing in....."
+                   Visibility="{Binding IsLoggingIn, Converter={StaticResource BooleanToVisibilityHiddenConverter}}"/>
+
+        <TextBlock Margin="0,5,0,0" Foreground="Red"
+                   Text="Wrong user name or password"
+                   Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}"/>
     </StackPanel>
 </UserControl>

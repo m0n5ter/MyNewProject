@@ -10,8 +10,8 @@ namespace MyNewProject.ViewModels;
 /// </summary>
 internal class LoginViewModel : ObservableObject
 {
-    private string _userName = string.Empty;
-    private string _password = string.Empty;
+    private string _userName = "admin";
+    private string _password = "123";
     private bool _isLoggingIn;
     private bool _hasError;
 

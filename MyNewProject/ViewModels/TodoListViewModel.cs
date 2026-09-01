@@ -18,18 +18,42 @@ internal class TodoListViewModel : ObservableObject
 {
     private string _newTitle = string.Empty;
     private TodoItemViewModel? _selectedItem;
+    private bool _isLoading;
 
     public TodoListViewModel()
     {
         Items.CollectionChanged += OnItemsCollectionChanged;
 
+        LoadCommand = new RelayCommand(Load, () => !IsLoading );
+
         AddCommand = new RelayCommand(Add, () => !string.IsNullOrWhiteSpace(NewTitle));
         RemoveCommand = new RelayCommand<TodoItemViewModel>(Remove, item => item != null);
         ClearDoneCommand = new RelayCommand(ClearDone, () => DoneCount > 0);
+    }
+
+
+    public bool IsLoading
+    {
+        get => _isLoading;
+        private set
+        {
+            if (SetProperty(ref _isLoading, value))
+                LoadCommand.NotifyCanExecuteChanged();
+        }
+    }
+
+    private async void Load()
+    {
+        IsLoading = true;
+        await Task.Delay(5000);
+
+
 
         Items.Add(new TodoItemViewModel("Learn properties and bindings") { IsDone = true });
         Items.Add(new TodoItemViewModel("Learn nested view models"));
         Items.Add(new TodoItemViewModel("Learn collections"));
+
+        IsLoading = false;
     }
 
     public ObservableCollection<TodoItemViewModel> Items { get; } = new();
@@ -54,6 +78,7 @@ internal class TodoListViewModel : ObservableObject
     public int DoneCount => Items.Count(item => item.IsDone);
     public int ActiveCount => TotalCount - DoneCount;
 
+    public RelayCommand LoadCommand { get; }
     public RelayCommand AddCommand { get; }
     public RelayCommand<TodoItemViewModel> RemoveCommand { get; }
     public RelayCommand ClearDoneCommand { get; }

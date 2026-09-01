@@ -16,6 +16,9 @@
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
             <Button DockPanel.Dock="Right" Margin="5,0,0,0" Padding="10,2"
                     Command="{Binding AddCommand}">Add</Button>
+
+            <Button DockPanel.Dock="Left" Margin="0,0,5,0" Padding="10,2"
+                    Command="{Binding LoadCommand}">Load</Button>
             <TextBox Text="{Binding NewTitle, UpdateSourceTrigger=PropertyChanged}"/>
         </DockPanel>
 

@@ -18,13 +18,12 @@ internal class TodoListViewModel : ObservableObject
 {
     private string _newTitle = string.Empty;
     private TodoItemViewModel? _selectedItem;
-    private bool _isLoading;
 
     public TodoListViewModel()
     {
         Items.CollectionChanged += OnItemsCollectionChanged;
 
-        LoadCommand = new RelayCommand(Load, () => !IsLoading );
+        LoadCommand = new AsyncRelayCommand(Load);
 
         AddCommand = new RelayCommand(Add, () => !string.IsNullOrWhiteSpace(NewTitle));
         RemoveCommand = new RelayCommand<TodoItemViewModel>(Remove, item => item != null);
@@ -32,28 +31,25 @@ internal class TodoListViewModel : ObservableObject
     }
 
 
-    public bool IsLoading
+    private async Task Load()
     {
-        get => _isLoading;
-        private set
+        try
         {
-            if (SetProperty(ref _isLoading, value))
-                LoadCommand.NotifyCanExecuteChanged();
+            await Task.Delay(1000);
+            throw new Exception("sdfsdfsdf");
+
+
+
+            Items.Add(new TodoItemViewModel("Learn properties and bindings") { IsDone = true });
+            Items.Add(new TodoItemViewModel("Learn nested view models"));
+            Items.Add(new TodoItemViewModel("Learn collections"));
+
         }
-    }
-
-    private async void Load()
-    {
-        IsLoading = true;
-        await Task.Delay(5000);
-
-
-
-        Items.Add(new TodoItemViewModel("Learn properties and bindings") { IsDone = true });
-        Items.Add(new TodoItemViewModel("Learn nested view models"));
-        Items.Add(new TodoItemViewModel("Learn collections"));
-
-        IsLoading = false;
+        catch (Exception ex)
+        {
+            // Handle the exception (e.g., log it, show a message to the user, etc.)
+            Console.WriteLine($"Error loading items: {ex.Message}");
+        }
     }
 
     public ObservableCollection<TodoItemViewModel> Items { get; } = new();
@@ -78,7 +74,7 @@ internal class TodoListViewModel : ObservableObject
     public int DoneCount => Items.Count(item => item.IsDone);
     public int ActiveCount => TotalCount - DoneCount;
 
-    public RelayCommand LoadCommand { get; }
+    public AsyncRelayCommand LoadCommand { get; }
     public RelayCommand AddCommand { get; }
     public RelayCommand<TodoItemViewModel> RemoveCommand { get; }
     public RelayCommand ClearDoneCommand { get; }

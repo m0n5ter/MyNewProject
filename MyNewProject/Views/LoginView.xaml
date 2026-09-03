@@ -22,12 +22,13 @@
 
         <TextBlock Margin="0,5,0,0" Foreground="Gray" FontSize="11">Hint: admin / 123</TextBlock>
 
+        <!-- The async command reports its own progress - no IsLoggingIn property behind it. -->
         <TextBlock Margin="0,5,0,0" FontSize="16"
                    Text="Signing in....."
-                   Visibility="{Binding IsLoggingIn, Converter={StaticResource BooleanToVisibilityHiddenConverter}}"/>
+                   Visibility="{Binding LoginCommand.IsRunning, Converter={StaticResource BooleanToVisibilityHiddenConverter}}"/>
 
-        <TextBlock Margin="0,5,0,0" Foreground="Red"
-                   Text="Wrong user name or password"
+        <TextBlock Margin="0,5,0,0" Foreground="Red" TextWrapping="Wrap"
+                   Text="{Binding ErrorMessage}"
                    Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}"/>
     </StackPanel>
 </UserControl>

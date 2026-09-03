@@ -12,13 +12,35 @@
 >
     <DockPanel>
 
+        <!-- Loading.
+             Nothing here is driven by a hand-written flag: the async command
+             disables itself while it runs, and LoadCancelCommand enables itself. -->
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <Button DockPanel.Dock="Left" Padding="10,2"
+                    Command="{Binding LoadCommand}">Load</Button>
+
+            <Button DockPanel.Dock="Left" Margin="5,0,0,0" Padding="10,2"
+                    Command="{Binding LoadCancelCommand}">Cancel</Button>
+
+            <CheckBox DockPanel.Dock="Right" VerticalAlignment="Center"
+                      IsChecked="{Binding SimulateError}"
+                      Content="Simulate error"/>
+
+            <TextBlock Margin="10,0,0,0" VerticalAlignment="Center" Foreground="Gray"
+                       Text="Loading....."
+                       Visibility="{Binding LoadCommand.IsRunning, Converter={StaticResource BooleanToVisibilityHiddenConverter}}"/>
+        </DockPanel>
+
+        <!-- A failed load is a state of the view model, not a MessageBox. -->
+        <TextBlock DockPanel.Dock="Top" Margin="0,0,0,8" Foreground="Red" TextWrapping="Wrap"
+                   Text="{Binding ErrorMessage}"
+                   Visibility="{Binding HasError, Converter={StaticResource BooleanToVisibilityConverter}}"/>
+
         <!-- New item -->
         <DockPanel DockPanel.Dock="Top" Margin="0,0,0,8">
             <Button DockPanel.Dock="Right" Margin="5,0,0,0" Padding="10,2"
                     Command="{Binding AddCommand}">Add</Button>
 
-            <Button DockPanel.Dock="Left" Margin="0,0,5,0" Padding="10,2"
-                    Command="{Binding LoadCommand}">Load</Button>
             <TextBox Text="{Binding NewTitle, UpdateSourceTrigger=PropertyChanged}"/>
         </DockPanel>
 

@@ -6,107 +6,105 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace MyNewProject.ViewModels;
 
-/// <summary>
-/// Child view model that owns the collection of items.
-///
-/// Two kinds of notifications are used here:
-/// 1. ObservableCollection.CollectionChanged - items added/removed;
-/// 2. PropertyChanged of every item - a single item changed (IsDone).
-/// The list subscribes to both to keep the counters up to date.
-/// </summary>
-internal class TodoListViewModel : ObservableObject
+internal partial class TodoListViewModel : ObservableObject
 {
-    private string _newTitle = string.Empty;
-    private TodoItemViewModel? _selectedItem;
+    [ObservableProperty]
+    [NotifyCanExecuteChangedFor(nameof(AddCommand))]
+    public partial string NewTitle { get; set; } = string.Empty;
+
+    [ObservableProperty]
+    public partial TodoItemViewModel? SelectedItem { get; set; }
+
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasError))]
+    public partial string? ErrorMessage { get; private set; }
+
+    [ObservableProperty]
+    public partial bool SimulateError { get; set; }
 
     public TodoListViewModel()
     {
         Items.CollectionChanged += OnItemsCollectionChanged;
-
-        LoadCommand = new AsyncRelayCommand(Load);
-
-        AddCommand = new RelayCommand(Add, () => !string.IsNullOrWhiteSpace(NewTitle));
-        RemoveCommand = new RelayCommand<TodoItemViewModel>(Remove, item => item != null);
-        ClearDoneCommand = new RelayCommand(ClearDone, () => DoneCount > 0);
-    }
-
-
-    private async Task Load()
-    {
-        try
-        {
-            await Task.Delay(1000);
-            throw new Exception("sdfsdfsdf");
-
-
-
-            Items.Add(new TodoItemViewModel("Learn properties and bindings") { IsDone = true });
-            Items.Add(new TodoItemViewModel("Learn nested view models"));
-            Items.Add(new TodoItemViewModel("Learn collections"));
-
-        }
-        catch (Exception ex)
-        {
-            // Handle the exception (e.g., log it, show a message to the user, etc.)
-            Console.WriteLine($"Error loading items: {ex.Message}");
-        }
     }
 
     public ObservableCollection<TodoItemViewModel> Items { get; } = new();
 
-    public string NewTitle
-    {
-        get => _newTitle;
-        set
-        {
-            if (SetProperty(ref _newTitle, value))
-                AddCommand.NotifyCanExecuteChanged();
-        }
-    }
-
-    public TodoItemViewModel? SelectedItem
-    {
-        get => _selectedItem;
-        set => SetProperty(ref _selectedItem, value);
-    }
+    public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
 
     public int TotalCount => Items.Count;
-    public int DoneCount => Items.Count(item => item.IsDone);
-    public int ActiveCount => TotalCount - DoneCount;
 
-    public AsyncRelayCommand LoadCommand { get; }
-    public RelayCommand AddCommand { get; }
-    public RelayCommand<TodoItemViewModel> RemoveCommand { get; }
-    public RelayCommand ClearDoneCommand { get; }
+    public int DoneCount => Items.Count(item => item.IsDone);
+    
+    public int ActiveCount => TotalCount - DoneCount;
 
     public void Clear()
     {
         Items.Clear();
         NewTitle = string.Empty;
         SelectedItem = null;
+        ErrorMessage = null;
     }
 
+    [RelayCommand(IncludeCancelCommand = true)]
+    private async Task LoadAsync(CancellationToken ct)
+    {
+        ErrorMessage = null;
+
+        // Items.Clear();
+
+        try
+        {
+            await Task.Delay(5000, ct);
+
+            if (SimulateError)
+                throw new InvalidOperationException("The server is down. Try again later.");
+
+            Items.Add(new TodoItemViewModel("Learn properties and bindings") { IsDone = true });
+            Items.Add(new TodoItemViewModel("Learn nested view models"));
+            Items.Add(new TodoItemViewModel("Learn collections"));
+        }
+        catch (OperationCanceledException)
+        {
+            // Cancellation is not a failure - the user asked for it. Always a separate branch.
+            ErrorMessage = "Loading cancelled.";
+        }
+        catch (Exception ex)
+        {
+            // Inside 'async void' this exception would have killed the application.
+            // Inside 'async Task' behind an async command it is just a value we can show.
+            ErrorMessage = ex.Message;
+        }
+    }
+
+    [RelayCommand(CanExecute = nameof(CanAdd))]
     private void Add()
     {
         Items.Add(new TodoItemViewModel(NewTitle.Trim()));
         NewTitle = string.Empty;
     }
 
+    private bool CanAdd() => !string.IsNullOrWhiteSpace(NewTitle);
+
+    [RelayCommand(CanExecute = nameof(CanRemove))]
     private void Remove(TodoItemViewModel? item)
     {
         if (item != null)
             Items.Remove(item);
     }
 
+    private bool CanRemove(TodoItemViewModel? item) => item is not null;
+
+    [RelayCommand(CanExecute = nameof(CanClearDone))]
     private void ClearDone()
     {
         foreach (var done in Items.Where(item => item.IsDone).ToList())
             Items.Remove(done);
     }
 
+    private bool CanClearDone() => DoneCount > 0;
+
     private void OnItemsCollectionChanged(object? sender, NotifyCollectionChangedEventArgs e)
     {
-        // The parent listens to its children, and stops listening when they leave the list.
         foreach (var item in e.OldItems?.OfType<TodoItemViewModel>() ?? [])
             item.PropertyChanged -= OnItemPropertyChanged;
 
@@ -127,6 +125,7 @@ internal class TodoListViewModel : ObservableObject
         OnPropertyChanged(nameof(TotalCount));
         OnPropertyChanged(nameof(DoneCount));
         OnPropertyChanged(nameof(ActiveCount));
+
         ClearDoneCommand.NotifyCanExecuteChanged();
     }
 }

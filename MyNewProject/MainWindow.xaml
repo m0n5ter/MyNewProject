@@ -35,7 +35,16 @@
                 </TextBlock>
             </DockPanel>
 
-            <views:TodoListView DataContext="{Binding TodoList}"/>
+            <TabControl>
+                <TabItem Header="Todo List">
+                    <views:TodoListView DataContext="{Binding TodoList}"/>
+                </TabItem>
+
+                <TabItem Header="Image">
+                    <views:ImageView/>
+                </TabItem>
+
+            </TabControl>
         </DockPanel>
     </Grid>
 </Window>

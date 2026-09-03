@@ -6,28 +6,19 @@ namespace MyNewProject.ViewModels;
 /// One item of the list. It is a full view model too:
 /// it implements INotifyPropertyChanged, so the UI reacts to every change.
 /// </summary>
-internal class TodoItemViewModel : ObservableObject
+internal partial class TodoItemViewModel : ObservableObject
 {
-    private string _title;
-    private bool _isDone;
-
     public TodoItemViewModel(string title)
     {
-        _title = title;
+        Title = title;
         CreatedAt = DateTime.Now;
     }
 
-    public string Title
-    {
-        get => _title;
-        set => SetProperty(ref _title, value);
-    }
+    [ObservableProperty]
+    public partial string Title { get; set; }
 
-    public bool IsDone
-    {
-        get => _isDone;
-        set => SetProperty(ref _isDone, value);
-    }
+    [ObservableProperty]
+    public partial bool IsDone { get; set; }
 
     public DateTime CreatedAt { get; }
 }

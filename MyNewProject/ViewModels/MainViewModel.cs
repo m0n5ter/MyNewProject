@@ -33,6 +33,8 @@ internal partial class MainViewModel : ObservableObject
     public LoginViewModel Login { get; }
 
     public TodoListViewModel TodoList { get; }
+    
+    public ImageViewModel Image { get; }
 
     public bool IsLoginVisible => !IsLoggedIn;
 

@@ -37,13 +37,13 @@
 
             <TabControl>
                 <TabItem Header="Todo List">
-                    <views:TodoListView DataContext="{Binding TodoList}"/>
+                    <views:TodoListView DataContext="{Binding TodoList}" Margin="20"/>
                 </TabItem>
 
                 <!-- The DataContext was missing here: the view was bound to
                      MainViewModel and every path inside it silently failed. -->
                 <TabItem Header="Image">
-                    <views:ImageView DataContext="{Binding Image}"/>
+                    <views:ImageView DataContext="{Binding Image}" Margin="20"/>
                 </TabItem>
 
             </TabControl>

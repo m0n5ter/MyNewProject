@@ -57,7 +57,7 @@ internal partial class LoginViewModel : ObservableObject
         try
         {
             // Pretend we are calling a server.
-            await Task.Delay(1500);
+            await Task.Delay(500);
 
             if (UserName == "admin" && Password == "123")
             {

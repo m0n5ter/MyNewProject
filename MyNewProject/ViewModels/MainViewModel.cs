@@ -34,7 +34,11 @@ internal partial class MainViewModel : ObservableObject
 
     public TodoListViewModel TodoList { get; }
     
-    public ImageViewModel Image { get; }
+    // Lesson 7: this property used to be declared and never assigned, so it was
+    // null and the whole Image tab was bound to nothing - and WPF said nothing.
+    // The 'new' is honest but temporary: creating dependencies is not this class's
+    // job. Lesson 8 replaces it with dependency injection.
+    public ImageViewModel Image { get; } = new();
 
     public bool IsLoginVisible => !IsLoggedIn;
 

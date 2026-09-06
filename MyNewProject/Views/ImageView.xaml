@@ -1,15 +1,151 @@
-﻿<UserControl x:Class="MyNewProject.Views.ImageView"
+<UserControl x:Class="MyNewProject.Views.ImageView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
-             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
-             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
-             xmlns:local="clr-namespace:MyNewProject.Views"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:MyNewProject.ViewModels"
-             mc:Ignorable="d" 
-             d:DesignHeight="450" d:DesignWidth="800"
-             d:DataContext="{d:DesignInstance viewModels:MainViewModel}"
-             >
-    <Grid>
-        <TextBox Text="{Binding Image.ImageUrl, UpdateSourceTrigger=PropertyChanged}"></TextBox>
-    </Grid>
+             xmlns:shapes="clr-namespace:MyNewProject.ViewModels.Shapes"
+             mc:Ignorable="d"
+             d:DesignHeight="380" d:DesignWidth="560"
+             d:DataContext="{d:DesignInstance viewModels:ImageViewModel}">
+
+    <UserControl.Resources>
+
+        <!--
+            Not a single x:Key below. A DataTemplate without a key is stored under
+            the key DataTemplateKey(type), and every ContentPresenter that is given
+            an object of that type finds its template on its own.
+
+            This is the whole point of the lesson: nowhere do we say "an ellipse is
+            drawn with an Ellipse". WPF looks at the runtime type of the item.
+        -->
+
+        <!-- Fallback for the base type. Comment out the Ellipse template below and
+             every ellipse turns into this grey placeholder: the lookup goes by the
+             exact type first, then up the chain of base classes. A new shape kind
+             does not break the app, it just renders as a question mark until
+             somebody writes its template. (Interfaces are NOT searched - that is
+             why the base is an abstract class and not an IShape.) -->
+        <DataTemplate DataType="{x:Type shapes:ShapeViewModel}">
+            <Border Width="{Binding Width}" Height="{Binding Height}"
+                    Background="#EEEEEE" BorderBrush="Red" BorderThickness="1">
+                <TextBlock Text="?" FontSize="20" Foreground="Red"
+                           HorizontalAlignment="Center" VerticalAlignment="Center"/>
+            </Border>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type shapes:EllipseViewModel}">
+            <Ellipse Width="{Binding Width}" Height="{Binding Height}"
+                     Fill="#7FB3FF" Stroke="#2C3E50" StrokeThickness="1.5"/>
+        </DataTemplate>
+
+        <DataTemplate DataType="{x:Type shapes:RectangleViewModel}">
+            <Rectangle Width="{Binding Width}" Height="{Binding Height}"
+                       RadiusX="{Binding CornerRadius}" RadiusY="{Binding CornerRadius}"
+                       Fill="#FFC98B" Stroke="#2C3E50" StrokeThickness="1.5"/>
+        </DataTemplate>
+
+        <!--
+            The container style. Canvas.Left / Canvas.Top MUST be set here and not
+            inside a DataTemplate: the direct child of the Canvas is the generated
+            ListBoxItem, and Canvas only reads those properties off its direct child.
+            Put them in the template and every shape sticks to the top left corner.
+        -->
+        <Style x:Key="ShapeContainerStyle" TargetType="ListBoxItem">
+            <Setter Property="Canvas.Left" Value="{Binding X}"/>
+            <Setter Property="Canvas.Top" Value="{Binding Y}"/>
+            <Setter Property="Padding" Value="0"/>
+            <Setter Property="Margin" Value="0"/>
+
+            <!-- A Thumb captures the mouse and marks MouseLeftButtonDown as handled,
+                 so the click never reaches ListBoxItem and selection stops working.
+                 The tunnelling event still gets there first. -->
+            <EventSetter Event="PreviewMouseLeftButtonDown" Handler="OnShapePreviewMouseDown"/>
+
+            <!-- The stock blue highlight is drawn for a text row and is of no use
+                 for a shape, so the container gets its own template. -->
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Grid>
+                            <!-- Thumb is a ready made "drag me" control: it captures the
+                                 mouse itself and reports a delta. No MouseDown / MouseMove
+                                 bookkeeping by hand. -->
+                            <Thumb DragDelta="OnShapeDragDelta">
+                                <Thumb.Template>
+                                    <ControlTemplate TargetType="Thumb">
+                                        <!-- Still a ContentPresenter, so the implicit
+                                             DataTemplate lookup keeps working here. -->
+                                        <ContentPresenter Content="{Binding}"/>
+                                    </ControlTemplate>
+                                </Thumb.Template>
+                            </Thumb>
+
+                            <Rectangle x:Name="SelectionMarker"
+                                       Margin="-4"
+                                       Stroke="DodgerBlue" StrokeThickness="1.5"
+                                       StrokeDashArray="3 2"
+                                       IsHitTestVisible="False"
+                                       Visibility="Collapsed"/>
+                        </Grid>
+
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="SelectionMarker" Property="Visibility" Value="Visible"/>
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+
+    </UserControl.Resources>
+
+    <DockPanel>
+
+        <!-- Two buttons, one command, different parameters. The command decides
+             what to create - the view only names the kind. -->
+        <WrapPanel DockPanel.Dock="Top" Margin="0,0,0,8">
+            <Button Padding="10,2" Command="{Binding AddShapeCommand}" CommandParameter="Ellipse">
+                Add ellipse
+            </Button>
+            <Button Padding="10,2" Margin="5,0,0,0" Command="{Binding AddShapeCommand}" CommandParameter="Rectangle">
+                Add rectangle
+            </Button>
+            <Button Padding="10,2" Margin="15,0,0,0" Command="{Binding DeleteCommand}">
+                Delete
+            </Button>
+            <Button Padding="10,2" Margin="5,0,0,0" Command="{Binding BringToFrontCommand}">
+                Bring to front
+            </Button>
+            <Button Padding="10,2" Margin="5,0,0,0" Command="{Binding ClearCommand}">
+                Clear
+            </Button>
+        </WrapPanel>
+
+        <TextBlock DockPanel.Dock="Bottom" Margin="0,8,0,0" Foreground="Gray"
+                   Text="{Binding StatusText}"/>
+
+        <!-- A ListBox is an ItemsControl plus selection. That is the only reason
+             it is here: SelectedItem comes for free, the price is the custom
+             container template above. -->
+        <Border BorderBrush="#CCCCCC" BorderThickness="1"
+                HorizontalAlignment="Left" VerticalAlignment="Top">
+            <ListBox ItemsSource="{Binding Shapes}"
+                     SelectedItem="{Binding SelectedShape}"
+                     ItemContainerStyle="{StaticResource ShapeContainerStyle}"
+                     Background="White" BorderThickness="0"
+                     ScrollViewer.HorizontalScrollBarVisibility="Disabled"
+                     ScrollViewer.VerticalScrollBarVisibility="Disabled">
+
+                <!-- No ItemTemplate anywhere. Polymorphism does the work. -->
+                <ListBox.ItemsPanel>
+                    <ItemsPanelTemplate>
+                        <Canvas Width="{Binding CanvasWidth}" Height="{Binding CanvasHeight}"/>
+                    </ItemsPanelTemplate>
+                </ListBox.ItemsPanel>
+            </ListBox>
+        </Border>
+
+    </DockPanel>
 </UserControl>

@@ -1,7 +1,8 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using MyNewProject.Services;
 using MyNewProject.ViewModels.Shapes;
 
 namespace MyNewProject.ViewModels;
@@ -13,16 +14,26 @@ namespace MyNewProject.ViewModels;
 /// The view model owns the rules (where a shape may be, what the z-order is),
 /// the view owns the looks (what an ellipse is drawn with) - see the implicit
 /// DataTemplates in ImageView.xaml.
+///
+/// Lesson 8: the 'new' is gone. Saving the scene is somebody else's job, and this
+/// class only says which job it needs done - ISceneStorage in the constructor.
+/// Who implements it is decided once, in App.ConfigureServices.
 /// </summary>
-internal partial class ImageViewModel : ObservableObject
+internal partial class ImageViewModel : ViewModelBase
 {
     private static readonly Random Random = new();
 
-    public ImageViewModel()
+    private readonly ISceneStorage _storage;
+
+    public ImageViewModel(ISceneStorage storage)
     {
+        _storage = storage;
+
         // Adding or removing a shape changes the status line.
         Shapes.CollectionChanged += (_, _) => OnPropertyChanged(nameof(StatusText));
     }
+
+    public override string Title => "Image";
 
     public ObservableCollection<ShapeViewModel> Shapes { get; } = new();
 
@@ -35,6 +46,13 @@ internal partial class ImageViewModel : ObservableObject
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(DeleteCommand), nameof(BringToFrontCommand))]
     public partial ShapeViewModel? SelectedShape { get; set; }
+
+    // Lesson 6, unchanged rule: a failure is a state of the view model, not a MessageBox.
+    [ObservableProperty]
+    [NotifyPropertyChangedFor(nameof(HasError))]
+    public partial string? ErrorMessage { get; private set; }
+
+    public bool HasError => !string.IsNullOrEmpty(ErrorMessage);
 
     public string StatusText =>
         SelectedShape?.Description ?? $"Shapes: {Shapes.Count}. Nothing selected.";
@@ -86,6 +104,51 @@ internal partial class ImageViewModel : ObservableObject
     {
         var shape = SelectedShape!;
         Shapes.Move(Shapes.IndexOf(shape), Shapes.Count - 1);
+    }
+
+    [RelayCommand]
+    private async Task SaveAsync(CancellationToken ct)
+    {
+        ErrorMessage = null;
+
+        try
+        {
+            await _storage.SaveAsync(Shapes, ct);
+        }
+        catch (OperationCanceledException)
+        {
+            ErrorMessage = "Saving cancelled.";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
+    }
+
+    [RelayCommand]
+    private async Task LoadAsync(CancellationToken ct)
+    {
+        ErrorMessage = null;
+
+        try
+        {
+            var shapes = await _storage.LoadAsync(ct);
+
+            // The collection object stays the same - the ListBox keeps its binding.
+            Shapes.Clear();
+            foreach (var shape in shapes)
+                Shapes.Add(shape);
+
+            SelectedShape = null;
+        }
+        catch (OperationCanceledException)
+        {
+            ErrorMessage = "Loading cancelled.";
+        }
+        catch (Exception ex)
+        {
+            ErrorMessage = ex.Message;
+        }
     }
 
     [RelayCommand]

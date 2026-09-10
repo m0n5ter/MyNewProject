@@ -1,0 +1,41 @@
+﻿<UserControl
+    x:Class="MyNewProject.Views.WorkspaceView"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:viewModels="clr-namespace:MyNewProject.ViewModels"
+    mc:Ignorable="d"
+    d:DesignWidth="600"
+    d:DesignHeight="420"
+    d:DataContext="{d:DesignInstance viewModels:WorkspaceViewModel}"
+>
+    <DockPanel>
+
+        <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
+            <Button DockPanel.Dock="Right" Padding="10,2" Command="{Binding LogoutCommand}">Logout</Button>
+            <TextBlock FontSize="18" VerticalAlignment="Center">
+                Todo list of <Run Text="{Binding UserName, Mode=OneWay}" FontWeight="Bold"/>
+            </TextBlock>
+        </DockPanel>
+
+        <!-- The tabs are data now, not markup. Adding a third tab means adding an item
+             to WorkspaceViewModel.Tabs and writing a DataTemplate for its type -
+             this file does not change at all. -->
+        <TabControl ItemsSource="{Binding Tabs}"
+                    SelectedItem="{Binding SelectedTab}">
+
+            <!-- Careful: on a TabControl, ItemTemplate is the template of the tab
+                 HEADER, not of its content. Everybody trips over this exactly once. -->
+            <TabControl.ItemTemplate>
+                <DataTemplate>
+                    <TextBlock Text="{Binding Title}"/>
+                </DataTemplate>
+            </TabControl.ItemTemplate>
+
+            <!-- ContentTemplate is deliberately not set: the content of the selected
+                 tab is rendered by the implicit template for its type (see
+                 Views/ViewTemplates.xaml). Set it here and that lookup stops. -->
+        </TabControl>
+    </DockPanel>
+</UserControl>

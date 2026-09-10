@@ -3,10 +3,20 @@
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:local="clr-namespace:MyNewProject"
              xmlns:viewModels="clr-namespace:MyNewProject.ViewModels"
-             xmlns:converters="clr-namespace:MyNewProject.Views.Converters"
-             StartupUri="MainWindow.xaml">
+             xmlns:converters="clr-namespace:MyNewProject.Views.Converters">
+    <!-- StartupUri is gone: the window is created by the container in App.OnStartup,
+         because it needs a view model that WPF cannot build on its own. -->
     <Application.Resources>
-        <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
-        <converters:BooleanToVisibilityHiddenConverter x:Key="BooleanToVisibilityHiddenConverter"/>
+        <!-- As soon as MergedDictionaries appears, every other resource has to live
+             inside this same single ResourceDictionary. Leave the converters outside
+             and the build fails with "The property 'Resources' is set more than once". -->
+        <ResourceDictionary>
+            <ResourceDictionary.MergedDictionaries>
+                <ResourceDictionary Source="Views/ViewTemplates.xaml"/>
+            </ResourceDictionary.MergedDictionaries>
+
+            <BooleanToVisibilityConverter x:Key="BooleanToVisibilityConverter"/>
+            <converters:BooleanToVisibilityHiddenConverter x:Key="BooleanToVisibilityHiddenConverter"/>
+        </ResourceDictionary>
     </Application.Resources>
 </Application>

@@ -1,3 +1,4 @@
+﻿using System.Text.Json.Serialization;
 using CommunityToolkit.Mvvm.ComponentModel;
 
 namespace MyNewProject.ViewModels.Shapes;
@@ -12,7 +13,9 @@ internal sealed partial class RectangleViewModel : ShapeViewModel
     [ObservableProperty]
     public partial double CornerRadius { get; set; }
 
+    [JsonIgnore]
     public override string Kind => "Rectangle";
 
+    [JsonIgnore]
     public override double Area => Width * Height;
 }

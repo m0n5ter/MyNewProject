@@ -1,52 +1,24 @@
-<Window x:Class="MyNewProject.MainWindow"
+﻿<Window x:Class="MyNewProject.MainWindow"
         xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
         xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-        xmlns:views="clr-namespace:MyNewProject.Views"
         xmlns:viewModels="clr-namespace:MyNewProject.ViewModels"
         mc:Ignorable="d"
-        Title="Todo" Height="560" Width="640">
+        d:DataContext="{d:DesignInstance viewModels:MainViewModel}"
+        Title="{Binding Title}" Height="560" Width="640">
 
-    <!-- One root view model for the whole window. Children get their piece of it below. -->
-    <Window.DataContext>
-        <viewModels:MainViewModel/>
-    </Window.DataContext>
+    <!--
+        The entire navigation of the application.
 
-    <Grid Margin="20">
+        Content is DATA - a view model - and WPF finds the view for it by the runtime
+        type in Views/ViewTemplates.xaml. There is no Visibility, no converter and no
+        DataContext="{Binding Something}" here any more, and only one screen exists
+        in the visual tree at a time.
 
-        <!-- Step 1: the login form.
-             Visibility is bound on the wrapper, because the inner view
-             replaces its own DataContext with MainViewModel.Login. -->
-        <Grid Visibility="{Binding IsLoginVisible, Converter={StaticResource BooleanToVisibilityConverter}}">
-            <views:LoginView Width="240"
-                             HorizontalAlignment="Center"
-                             VerticalAlignment="Center"
-                             DataContext="{Binding Login}"/>
-        </Grid>
-
-        <!-- Step 2: the todo list. DataContext = MainViewModel.TodoList -->
-        <DockPanel Visibility="{Binding IsLoggedIn, Converter={StaticResource BooleanToVisibilityConverter}}">
-
-            <DockPanel DockPanel.Dock="Top" Margin="0,0,0,10">
-                <Button DockPanel.Dock="Right" Padding="10,2" Command="{Binding LogoutCommand}">Logout</Button>
-                <TextBlock FontSize="18" VerticalAlignment="Center">
-                    Todo list of <Run Text="{Binding CurrentUser, Mode=OneWay}" FontWeight="Bold"/>
-                </TextBlock>
-            </DockPanel>
-
-            <TabControl>
-                <TabItem Header="Todo List">
-                    <views:TodoListView DataContext="{Binding TodoList}" Margin="20"/>
-                </TabItem>
-
-                <!-- The DataContext was missing here: the view was bound to
-                     MainViewModel and every path inside it silently failed. -->
-                <TabItem Header="Image">
-                    <views:ImageView DataContext="{Binding Image}" Margin="20"/>
-                </TabItem>
-
-            </TabControl>
-        </DockPanel>
-    </Grid>
+        The DataContext of the window is handed over by whoever created it: App.OnStartup.
+        The <Window.DataContext><viewModels:MainViewModel/> of lesson 7 is gone - XAML can
+        only call a parameterless constructor, and MainViewModel asks for its dependencies.
+    -->
+    <ContentControl Content="{Binding CurrentViewModel}" Margin="20"/>
 </Window>

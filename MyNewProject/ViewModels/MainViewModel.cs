@@ -1,61 +1,55 @@
 using CommunityToolkit.Mvvm.ComponentModel;
-using CommunityToolkit.Mvvm.Input;
 
 namespace MyNewProject.ViewModels;
 
 /// <summary>
-/// Root view model. It owns two child view models and switches between them.
-/// The children know nothing about each other - all the wiring lives here.
+/// Root view model. After lesson 8 it is a router and nothing else: it holds
+/// the screen that is currently shown and decides which one comes next.
 ///
-/// Lesson 6: [NotifyPropertyChangedFor] replaces the hand-written
-/// OnPropertyChanged(nameof(IsLoginVisible)) inside the setter.
+/// Note what is NOT here any more:
+///   - IsLoggedIn / IsLoginVisible and the two visibility converters behind them;
+///   - TodoList.Clear() in Logout - the whole workspace is a new object now;
+///   - 'new' anywhere. Every dependency is asked for in the constructor.
 /// </summary>
-internal partial class MainViewModel : ObservableObject
+internal partial class MainViewModel : ViewModelBase
 {
-    // Note the trade-off: [ObservableProperty] always generates a PUBLIC setter,
-    // while the hand-written property had a private one. If that matters,
-    // keep writing the property by hand - the generator is not always the answer.
-    [ObservableProperty]
-    [NotifyPropertyChangedFor(nameof(IsLoginVisible))]
-    private bool _isLoggedIn;
+    private readonly LoginViewModel _login;
 
-    [ObservableProperty]
-    private string _currentUser = string.Empty;
+    // Not a WorkspaceViewModel: we need a NEW one per session, and the user name
+    // is only known at run time. A factory is the answer to both - see 4.5 of the lesson.
+    private readonly Func<string, WorkspaceViewModel> _workspaceFactory;
 
-    public MainViewModel()
+    public MainViewModel(LoginViewModel login, Func<string, WorkspaceViewModel> workspaceFactory)
     {
-        Login = new LoginViewModel();
-        Login.LoginSucceeded += OnLoginSucceeded;
+        _login = login;
+        _workspaceFactory = workspaceFactory;
+        _login.LoginSucceeded += OnLoginSucceeded;
 
-        TodoList = new TodoListViewModel();
+        CurrentViewModel = _login;
     }
 
-    public LoginViewModel Login { get; }
+    public override string Title => "Todo";
 
-    public TodoListViewModel TodoList { get; }
-    
-    // Lesson 7: this property used to be declared and never assigned, so it was
-    // null and the whole Image tab was bound to nothing - and WPF said nothing.
-    // The 'new' is honest but temporary: creating dependencies is not this class's
-    // job. Lesson 8 replaces it with dependency injection.
-    public ImageViewModel Image { get; } = new();
-
-    public bool IsLoginVisible => !IsLoggedIn;
+    // The whole navigation state of the application. One assignment switches the screen;
+    // the view finds the matching DataTemplate by the runtime type all by itself.
+    [ObservableProperty]
+    public partial ViewModelBase CurrentViewModel { get; private set; }
 
     private void OnLoginSucceeded(string userName)
     {
-        CurrentUser = userName;
-        IsLoggedIn = true;
+        var workspace = _workspaceFactory(userName);
+        workspace.LogoutRequested += OnLogoutRequested;
+        CurrentViewModel = workspace;
     }
 
-    [RelayCommand]
-    private void Logout()
+    private void OnLogoutRequested()
     {
-        IsLoggedIn = false;
-        CurrentUser = string.Empty;
-        Login.Reset();
+        // Unsubscribing is not optional: the event holds a reference to this handler,
+        // so the old workspace - and the whole object graph behind it - would stay alive.
+        if (CurrentViewModel is WorkspaceViewModel old)
+            old.LogoutRequested -= OnLogoutRequested;
 
-        // The next user must not see the previous user's items.
-        TodoList.Clear();
+        _login.Reset();
+        CurrentViewModel = _login;
     }
 }

@@ -1,4 +1,4 @@
-using System.Collections.ObjectModel;
+﻿using System.Collections.ObjectModel;
 using System.Collections.Specialized;
 using System.ComponentModel;
 using CommunityToolkit.Mvvm.ComponentModel;
@@ -6,8 +6,14 @@ using CommunityToolkit.Mvvm.Input;
 
 namespace MyNewProject.ViewModels;
 
-internal partial class TodoListViewModel : ObservableObject
+/// <summary>
+/// The todo list screen. Lesson 8 turned it into a tab: it derives from ViewModelBase
+/// and names itself through Title, so WorkspaceView can build its tab header from data.
+/// </summary>
+internal partial class TodoListViewModel : ViewModelBase
 {
+    public override string Title => "Todo List";
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(AddCommand))]
     public partial string NewTitle { get; set; } = string.Empty;
@@ -36,14 +42,6 @@ internal partial class TodoListViewModel : ObservableObject
     public int DoneCount => Items.Count(item => item.IsDone);
     
     public int ActiveCount => TotalCount - DoneCount;
-
-    public void Clear()
-    {
-        Items.Clear();
-        NewTitle = string.Empty;
-        SelectedItem = null;
-        ErrorMessage = null;
-    }
 
     [RelayCommand(IncludeCancelCommand = true)]
     private async Task LoadAsync(CancellationToken ct)

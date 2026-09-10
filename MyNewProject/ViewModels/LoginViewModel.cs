@@ -1,4 +1,4 @@
-using CommunityToolkit.Mvvm.ComponentModel;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 
 namespace MyNewProject.ViewModels;
@@ -12,9 +12,14 @@ namespace MyNewProject.ViewModels;
 /// LoginCommand is an IAsyncRelayCommand, so the view binds to
 /// LoginCommand.IsRunning and the button disables itself while the task runs.
 /// The error is a message, not a bool - same shape as in TodoListViewModel.
+///
+/// Lesson 8: it is a screen now, so it derives from ViewModelBase. Nothing else
+/// changed - it still knows nothing about who shows it or what comes next.
 /// </summary>
-internal partial class LoginViewModel : ObservableObject
+internal partial class LoginViewModel : ViewModelBase
 {
+    public override string Title => "Sign in";
+
     [ObservableProperty]
     [NotifyCanExecuteChangedFor(nameof(LoginCommand))]
     private string _userName = "admin";
